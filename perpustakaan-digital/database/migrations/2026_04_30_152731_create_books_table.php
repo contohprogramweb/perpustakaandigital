@@ -12,11 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('books', function (Blueprint $table) {
-            $table->id();                     // Kolom id (BIGINT UNSIGNED, PK, AUTO_INCREMENT)
-            $table->string('title');          // Kolom title VARCHAR(255) NOT NULL
-            $table->string('author');         // Kolom author VARCHAR(255) NOT NULL
-            $table->unsignedSmallInteger('year')->nullable();  // Kolom year SMALLINT, boleh NULL
-            $table->timestamps();             // Kolom created_at & updated_at
+            $table->id();
+            $table->string('title');
+            $table->string('author');
+            $table->string('isbn')->nullable();
+            $table->string('publisher')->nullable();
+            $table->unsignedSmallInteger('published_year')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedInteger('stock')->default(1);
+            $table->unsignedInteger('available_stock')->default(1);
+            $table->text('description')->nullable();
+            $table->string('cover_image')->nullable();
+            $table->timestamps();
         });
     }
 
