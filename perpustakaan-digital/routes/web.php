@@ -9,7 +9,7 @@ use App\Http\Controllers\UserController;
 // Home route
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 // Resource routes (require authentication in real app)
 Route::resource('books', BookController::class);
