@@ -1,11 +1,13 @@
 @extends('layouts.app')
 
+@section('title', 'Daftar Peminjaman')
+
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Daftar Buku</h1>
-        <a href="{{ route('books.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
-            + Tambah Buku Baru
+        <h1 class="text-3xl font-bold text-gray-800">Daftar Peminjaman</h1>
+        <a href="{{ route('loans.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            + Peminjaman Baru
         </a>
     </div>
 
@@ -20,19 +22,19 @@
             <thead>
                 <tr>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Judul
+                        Peminjam
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Penulis
+                        Buku
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Kategori
+                        Tanggal Pinjam
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Tahun
+                        Jatuh Tempo
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Stok
+                        Status
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Aksi
@@ -40,50 +42,53 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($books as $book)
+                @forelse($loans as $loan)
                 <tr>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <p class="text-gray-900 whitespace-no-wrap font-semibold">{{ $book->title }}</p>
+                        <p class="text-gray-900 whitespace-no-wrap font-semibold">{{ $loan->user->name }}</p>
+                        <p class="text-gray-600 text-xs">{{ $loan->user->email }}</p>
                     </td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <p class="text-gray-900 whitespace-no-wrap">{{ $book->author }}</p>
+                        <p class="text-gray-900 whitespace-no-wrap font-semibold">{{ $loan->book->title }}</p>
+                        <p class="text-gray-600 text-xs">{{ $loan->book->author }}</p>
                     </td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <p class="text-gray-900 whitespace-no-wrap">
-                            {{ $book->category ? $book->category->name : '-' }}
+                        <p class="text-gray-900 whitespace-no-wrap">{{ $loan->loan_date->format('d M Y') }}</p>
+                    </td>
+                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                        <p class="{{ $loan->isOverdue() ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                            {{ $loan->due_date->format('d M Y') }}
+                            @if($loan->isOverdue())
+                                <br><span class="text-xs">(Terlambat)</span>
+                            @endif
                         </p>
                     </td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <p class="text-gray-900 whitespace-no-wrap">{{ $book->published_year ?? '-' }}</p>
-                    </td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                        <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                            <span aria-hidden="true" class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                            <span class="relative">{{ $book->available_stock }} / {{ $book->stock }}</span>
+                        <span class="relative inline-block px-3 py-1 font-semibold leading-tight {{ $loan->status === 'returned' ? 'text-green-900' : ($loan->isOverdue() ? 'text-red-900' : 'text-yellow-900') }}">
+                            <span aria-hidden="true" class="absolute inset-0 {{ $loan->status === 'returned' ? 'bg-green-200' : ($loan->isOverdue() ? 'bg-red-200' : 'bg-yellow-200') }} opacity-50 rounded-full"></span>
+                            <span class="relative">{{ ucfirst($loan->status) }}</span>
                         </span>
                     </td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                         <div class="flex space-x-2">
-                            <a href="{{ route('books.show', $book->id) }}" class="text-blue-600 hover:text-blue-900">
+                            <a href="{{ route('loans.show', $loan->id) }}" class="text-blue-600 hover:text-blue-900">
                                 Detail
                             </a>
-                            <a href="{{ route('books.edit', $book->id) }}" class="text-yellow-600 hover:text-yellow-900">
-                                Edit
-                            </a>
-                            <form action="{{ route('books.destroy', $book->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus buku ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                    Hapus
-                                </button>
-                            </form>
+                            @if($loan->status === 'borrowed')
+                                <form action="{{ route('loans.return', $loan->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-green-600 hover:text-green-900">
+                                        Kembalikan
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
                     <td colspan="6" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">
-                        Belum ada data buku.
+                        Belum ada data peminjaman.
                     </td>
                 </tr>
                 @endforelse
@@ -92,7 +97,7 @@
     </div>
 
     <div class="mt-4">
-        {{ $books->links() }}
+        {{ $loans->links() }}
     </div>
 </div>
 @endsection
